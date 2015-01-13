@@ -4,7 +4,7 @@
 #include "Shape.h"
 
 static bool CollideCircleCircle(RigidBody* body1, RigidBody* body2, ContactInfo& contact);
-static bool CollideCirclePlane(RigidBody* body1, RigidBody* body2, ContactInfo& contact);
+static bool CollideCircleBox(RigidBody* body1, RigidBody* body2, ContactInfo& contact);
 
 bool Collide(RigidBody* body1, RigidBody* body2, ContactInfo& contact)
 {
@@ -15,13 +15,13 @@ bool Collide(RigidBody* body1, RigidBody* body2, ContactInfo& contact)
     {
         return CollideCircleCircle(body1, body2, contact);
     }
-    else if (shape1->Type() == ShapeType::Circle && shape2->Type() == ShapeType::Plane)
+    else if (shape1->Type() == ShapeType::Circle && shape2->Type() == ShapeType::Box)
     {
-        return CollideCirclePlane(body1, body2, contact);
+        return CollideCircleBox(body1, body2, contact);
     }
-    else if (shape1->Type() == ShapeType::Plane && shape2->Type() == ShapeType::Circle)
+    else if (shape1->Type() == ShapeType::Box && shape2->Type() == ShapeType::Circle)
     {
-        if (CollideCirclePlane(body2, body1, contact))
+        if (CollideCircleBox(body2, body1, contact))
         {
             contact.worldPosition = contact.worldPosition + contact.normal * -contact.distance;
             contact.normal = -contact.normal;
@@ -54,19 +54,74 @@ bool CollideCircleCircle(RigidBody* body1, RigidBody* body2, ContactInfo& contac
     return false;
 }
 
-bool CollideCirclePlane(RigidBody* body1, RigidBody* body2, ContactInfo& contact)
+bool CollideCircleBox(RigidBody* body1, RigidBody* body2, ContactInfo& contact)
 {
     const CircleShape* shape1 = (const CircleShape*)body1->GetShape();
-    const PlaneShape* shape2 = (const PlaneShape*)body2->GetShape();
+    const BoxShape* shape2 = (const BoxShape*)body2->GetShape();
 
-    float d = Dot(body1->Position(), shape2->Normal()) - shape2->Distance();
-    if (d < shape1->Radius())
+    // Transform the circle to local space of the box (box then becomes aabb)
+    Matrix2 rotB = Matrix2(body2->Rotation());
+    Matrix2 invRotB = rotB.Transposed();
+
+    Vector2 toCircle = body1->Position() - body2->Position();
+    Vector2 localToCircle = invRotB * toCircle;
+
+    Vector2 halfWidths = 0.5f * shape2->Size();
+
+    // If the center of the sphere is outside of the aabb
+    if (localToCircle.x < -halfWidths.x || localToCircle.x > halfWidths.x ||
+        localToCircle.y < -halfWidths.y || localToCircle.y > halfWidths.y)
     {
-        contact.distance = shape1->Radius() - d;
-        contact.normal = shape2->Normal();
+        // Find closest point on box to the center of the circle.
+        Vector2 closestPt = Vector2(
+            localToCircle.x >= 0 ? min(halfWidths.x, localToCircle.x) : max(-halfWidths.x, localToCircle.x),
+            localToCircle.y >= 0 ? min(halfWidths.y, localToCircle.y) : max(-halfWidths.y, localToCircle.y));
+
+        Vector2 toClosest = closestPt - localToCircle;
+        float d2 = toClosest.LengthSq();
+        float r2 = shape1->Radius() * shape1->Radius();
+        if (d2 > r2)
+        {
+            return false;
+        }
+
+        contact.distance = sqrtf(d2) - shape1->Radius();
+        contact.normal = -(rotB * toClosest).Normalized();
         contact.worldPosition = body1->Position() - contact.normal * shape1->Radius();
         return true;
     }
+    else
+    {
+        // Otherwise, find side we're closest to & use that
+        float dists[] =
+        {
+            localToCircle.x - (-halfWidths.x),
+            halfWidths.x - localToCircle.x,
+            localToCircle.y - (-halfWidths.y),
+            halfWidths.y - localToCircle.y
+        };
 
-    return false;
+        int iMin = 0;
+        for (int i = 1; i < _countof(dists); ++i)
+        {
+            if (dists[i] < dists[iMin])
+            {
+                iMin = i;
+            }
+        }
+
+        contact.distance = -(dists[iMin] + shape1->Radius());
+        switch (iMin)
+        {
+        case 0: contact.normal = Vector2(-1, 0); break;
+        case 1: contact.normal = Vector2(1, 0); break;
+        case 2: contact.normal = Vector2(0, -1); break;
+        case 3: contact.normal = Vector2(0, 1); break;
+        default: assert(false); break;
+        }
+
+        contact.normal = (rotB * contact.normal).Normalized();
+        contact.worldPosition = body1->Position() - contact.normal * shape1->Radius();
+        return true;
+    }
 }

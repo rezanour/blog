@@ -87,16 +87,9 @@ void PhysicsWorld::Draw(DebugRenderer* renderer)
             renderer->DrawCircle(body->Position(), ((CircleShape*)shape)->Radius(), body->Rotation());
             break;
 
-        case ShapeType::Plane:
-        {
-            PlaneShape* plane = (PlaneShape*)shape;
-            Vector2 perp = Cross(plane->Normal(), 1.0f);
-            Vector2 c = plane->Normal() * plane->Distance();
-            Vector2 a = c + perp * 200.0f;
-            Vector2 b = c - perp * 200.0f;
-            renderer->DrawLine(a, b);
+        case ShapeType::Box:
+            renderer->DrawBox(body->Position(), ((BoxShape*)shape)->Size(), body->Rotation());
             break;
-        }
 
         default:
             assert(false);

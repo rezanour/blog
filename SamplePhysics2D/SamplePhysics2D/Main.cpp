@@ -33,32 +33,34 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int)
     // Create a physics world object to run our simulation
     std::unique_ptr<PhysicsWorld> world(new PhysicsWorld(Vector2(0.0f, -10.0f), 100));
 
-    // Create an assortment of objects
+    // Create an assortment of random objects
+    srand(0);
+
     std::vector<std::unique_ptr<RigidBody>> bodies;
-    bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new CircleShape(), 5.0f)));
-    bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new CircleShape(), 5.0f)));
-    bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new CircleShape(), 5.0f)));
-    bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new CircleShape(1.5f), 7.0f)));
-    bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new CircleShape(2.0f), 10.0f)));
-    bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new CircleShape(0.5f), 2.0f)));
+
+    for (int i = 0; i < 20; ++i)
+    {
+        bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new CircleShape((rand() % 10 + 1) * 0.2f), 5.0f)));
+        bodies[bodies.size() - 1]->Position() = Vector2(rand() % 20 - 10, rand() % 50 + 2);
+    }
 
     // Walls
-    bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new PlaneShape(Vector2(0.0f, 1.0f), -8.0f), FLT_MAX)));
-    bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new PlaneShape(Vector2(0.707f, 0.707f), -8.0f), FLT_MAX)));
-    bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new PlaneShape(Vector2(-0.707f, 0.707f), -8.0f), FLT_MAX)));
-
-    bodies[0]->Position() = Vector2(0.0f, 5.0f);
-    bodies[1]->Position() = Vector2(0.0f, 10.0f);
-    bodies[2]->Position() = Vector2(0.0f, 15.0f);
-    bodies[3]->Position() = Vector2(0.0f, 20.0f);
-    bodies[4]->Position() = Vector2(0.0f, 25.0f);
-    bodies[5]->Position() = Vector2(0.0f, 30.0f);
+    bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new BoxShape(20.0f, 1.0f), FLT_MAX)));
+    bodies[bodies.size() - 1]->Position() = Vector2(0.0f, -10.0f);
+    bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new BoxShape(1.0f, 20.0f), FLT_MAX)));
+    bodies[bodies.size() - 1]->Position() = Vector2(-10.0f, 0.0f);
+    bodies[bodies.size() - 1]->Rotation() = 0.3f;
+    bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new BoxShape(1.0f, 20.0f), FLT_MAX)));
+    bodies[bodies.size() - 1]->Position() = Vector2(10.0f, 0.0f);
+    bodies[bodies.size() - 1]->Rotation() = -0.3f;
 
     // Add them to the world
     for (auto& body : bodies)
     {
         world->AddBody(body.get());
     }
+
+    SetWindowText(hwnd, L"ESC=Exit, ArrowKeys=Move Object_0");
 
     // Make window visible and active
     ShowWindow(hwnd, SW_SHOW);
@@ -79,17 +81,26 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int)
             static const float dt = 1.0f / 60.0f;
 
             // Some basic input for testing purposes
+            if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
+            {
+                PostQuitMessage(0);
+            }
+
             if (GetAsyncKeyState(VK_LEFT) & 0x8000)
             {
                 bodies[0]->Force() += Vector2(-100.0f, 0.0f);
             }
-            else if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+            if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
             {
                 bodies[0]->Force() += Vector2(100.0f, 0.0f);
             }
-            else if (GetAsyncKeyState(VK_UP) & 0x8000)
+            if (GetAsyncKeyState(VK_UP) & 0x8000)
             {
                 bodies[0]->Force() += Vector2(0.0f, 200.0f);
+            }
+            if (GetAsyncKeyState(VK_DOWN) & 0x8000)
+            {
+                bodies[0]->Force() += Vector2(0.0f, -100.0f);
             }
 
             world->Update(dt);

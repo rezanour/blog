@@ -178,6 +178,7 @@
     <ClInclude Include="DebugRenderer.h" />
     <ClInclude Include="DebugRendererPS.h" />
     <ClInclude Include="DebugRendererVS.h" />
+    <ClInclude Include="Matrix2.h" />
     <ClInclude Include="PhysicsWorld.h" />
     <ClInclude Include="Precomp.h" />
     <ClInclude Include="RigidBody.h" />

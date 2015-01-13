@@ -6,8 +6,7 @@ float CircleShape::ComputeI(float mass) const
     return mass * (_radius * _radius) / 4.0f;
 }
 
-float PlaneShape::ComputeI(float mass) const
+float BoxShape::ComputeI(float mass) const
 {
-    assert(mass == FLT_MAX);
-    return FLT_MAX;
+    return mass * (_size.x * _size.x + _size.y * _size.y) / 12.0f;
 }

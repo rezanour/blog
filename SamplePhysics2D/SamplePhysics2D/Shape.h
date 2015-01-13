@@ -3,7 +3,7 @@
 enum class ShapeType
 {
     Circle = 0,
-    Plane           // Only use for static infinite planes. Not simulated
+    Box,
 };
 
 class Shape
@@ -44,24 +44,18 @@ private:
     float _radius;
 };
 
-class PlaneShape : public Shape
+class BoxShape : public Shape
 {
 public:
-    PlaneShape() : Shape(ShapeType::Plane), _normal(0.0f, 1.0f), _distance(0.0f) {}
-    PlaneShape(const Vector2& normal, float distance)
-        : Shape(ShapeType::Plane), _normal(normal), _distance(distance)
-    {}
+    BoxShape() : Shape(ShapeType::Box), _size(1.0f, 1.0f) {}
+    BoxShape(float w, float h) : Shape(ShapeType::Box), _size(w, h) {}
 
-    const Vector2& Normal() const { return _normal; }
-    Vector2& Normal() { return _normal; }
-
-    const float Distance() const { return _distance; }
-    float& Distance() { return _distance; }
+    const Vector2& Size() const { return _size; }
+    Vector2& Size() { return _size; }
 
     // Shape
     float ComputeI(float mass) const override;
 
 private:
-    Vector2 _normal;
-    float _distance;
+    Vector2 _size;
 };
