@@ -65,12 +65,6 @@ struct Vector2
         return n;
     }
 
-    // Other operations
-    static float Dot(const Vector2& a, const Vector2& b)
-    {
-        return a.x * b.x + a.y * b.y;
-    }
-
     float x, y;
 };
 
@@ -97,4 +91,27 @@ inline Vector2 operator* (const Vector2& a, float s)
 inline Vector2 operator/ (const Vector2& a, float s)
 {
     return Vector2(a.x / s, a.y / s);
+}
+
+inline float Dot(const Vector2& a, const Vector2& b)
+{
+    return a.x * b.x + a.y * b.y;
+}
+
+// Finds the length of the resulting vector from crossing the 2D vectors
+inline float Cross(const Vector2& a, const Vector2& b)
+{
+    return a.x * b.y - a.y * b.x;
+}
+
+// 2D Cross (perp) product with a given length
+inline Vector2 Cross(const Vector2& a, float s)
+{
+    return Vector2(s * a.y, -s * a.x);
+}
+
+// 2D Cross (perp) product with a given length
+inline Vector2 Cross(float s, const Vector2& a)
+{
+    return Vector2(-s * a.y, s * a.x);
 }

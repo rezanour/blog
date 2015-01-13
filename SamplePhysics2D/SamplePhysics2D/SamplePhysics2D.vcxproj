@@ -178,18 +178,27 @@
     <ClInclude Include="DebugRenderer.h" />
     <ClInclude Include="DebugRendererPS.h" />
     <ClInclude Include="DebugRendererVS.h" />
+    <ClInclude Include="PhysicsWorld.h" />
     <ClInclude Include="Precomp.h" />
+    <ClInclude Include="RigidBody.h" />
+    <ClInclude Include="RigidBodyPair.h" />
+    <ClInclude Include="Shape.h" />
     <ClInclude Include="Vector2.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Collision.cpp" />
     <ClCompile Include="DebugRenderer.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="PhysicsWorld.cpp" />
+    <ClCompile Include="RigidBodyPair.cpp" />
     <ClCompile Include="Precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="RigidBody.cpp" />
+    <ClCompile Include="Shape.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="DebugRendererPS.hlsl">

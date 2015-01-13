@@ -135,8 +135,8 @@ bool DebugRenderer::Initialize(HWND hwnd)
 void DebugRenderer::SetViewport(const Vector2& position, const Vector2& size)
 {
     Constants constants;
-    constants.ViewportPosition = position;
-    constants.ViewportSize = size;
+    constants.viewportPosition = position;
+    constants.viewportSize = size;
     _context->UpdateSubresource(_constantBuffer.Get(), 0, nullptr, &constants, sizeof(constants), 0);
 }
 
@@ -193,7 +193,7 @@ void DebugRenderer::DrawBox(const Vector2& position, const Vector2& widths, floa
 
 void DebugRenderer::DrawCircle(const Vector2& position, float radius, float rotation, const Color& color)
 {
-    static const int numPoints = 16;
+    static const int numPoints = 32;
 
     Vector2 first = position + Vector2(radius, 0.0f);
     Vector2 prev = first;

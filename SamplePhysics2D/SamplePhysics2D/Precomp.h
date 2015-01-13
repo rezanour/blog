@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <vector>
+#include <map>
 
 // math headers
 #include "Vector2.h"

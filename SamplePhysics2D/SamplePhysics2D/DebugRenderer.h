@@ -69,8 +69,8 @@ private:
 
     struct Constants
     {
-        Vector2 ViewportPosition;
-        Vector2 ViewportSize;
+        Vector2 viewportPosition;
+        Vector2 viewportSize;
     };
 
     std::vector<Vertex> _vertices;
