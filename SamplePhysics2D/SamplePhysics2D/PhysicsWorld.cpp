@@ -43,6 +43,22 @@ void PhysicsWorld::Update(float dt)
 
         body->LinearVelocity() += dt * (_gravity + body->InvMass() * body->Force());
         body->AngularVelocity() += dt * body->InvI() * body->Torque();
+
+        // Dampen the velocities to simulate friction (we'll add friction simulation later)
+        static const float DampeningTerm = 0.001f;
+        body->LinearVelocity() += -body->LinearVelocity().Normalized() * DampeningTerm;
+        body->AngularVelocity() += (body->AngularVelocity() > 0) ? -DampeningTerm : DampeningTerm;
+
+        // Clamp to 0 if the value becomes too low
+        static const float ClampThreshold = 0.01f;
+        if (body->LinearVelocity().LengthSq() < ClampThreshold)
+        {
+            body->LinearVelocity() = Vector2(0, 0);
+        }
+        if (fabsf(body->AngularVelocity()) < ClampThreshold)
+        {
+            body->AngularVelocity() = 0.0f;
+        }
     }
 
     // Do all one time init for the pairs

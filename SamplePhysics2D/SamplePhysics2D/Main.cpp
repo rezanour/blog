@@ -31,16 +31,24 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int)
     }
 
     // Create a physics world object to run our simulation
-    std::unique_ptr<PhysicsWorld> world(new PhysicsWorld(Vector2(0.0f, -10.0f), 100));
+    std::unique_ptr<PhysicsWorld> world(new PhysicsWorld(Vector2(0.0f, -20.0f), 100));
 
     // Create an assortment of random objects
     srand(0);
 
     std::vector<std::unique_ptr<RigidBody>> bodies;
 
-    for (int i = 0; i < 20; ++i)
+    bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new BoxShape(2, 2), 5.0f)));
+    for (int i = 0; i < 10; ++i)
     {
-        bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new CircleShape((rand() % 10 + 1) * 0.2f), 5.0f)));
+        if (rand() % 2 == 0)
+        {
+            bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new CircleShape((rand() % 5 + 1) * 0.4f), 5.0f)));
+        }
+        else
+        {
+            bodies.push_back(std::unique_ptr<RigidBody>(new RigidBody(new BoxShape(rand() % 2 + 1.0f, rand() % 2 + 1.0f), 5.0f)));
+        }
         bodies[bodies.size() - 1]->Position() = Vector2(rand() % 20 - 10, rand() % 50 + 2);
     }
 
@@ -96,7 +104,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int)
             }
             if (GetAsyncKeyState(VK_UP) & 0x8000)
             {
-                bodies[0]->Force() += Vector2(0.0f, 200.0f);
+                bodies[0]->Force() += Vector2(0.0f, 300.0f);
             }
             if (GetAsyncKeyState(VK_DOWN) & 0x8000)
             {

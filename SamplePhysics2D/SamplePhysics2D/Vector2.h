@@ -8,11 +8,9 @@ struct Vector2
     Vector2(const Vector2& other) : x(other.x), y(other.y) {}
 
     // Negate
-    Vector2& operator- ()
+    Vector2 operator- ()
     {
-        x = -x;
-        y = -y;
-        return *this;
+        return Vector2(-x, -y);
     }
 
     // Assign

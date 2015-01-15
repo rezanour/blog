@@ -22,7 +22,7 @@ RigidBodyPair::RigidBodyPair(RigidBody* body1, RigidBody* body2)
 void RigidBodyPair::PreSolve(float invDt)
 {
     static const float Slop = 0.01f;
-    static const float BiasFactor = 0.2f;
+    static const float BiasFactor = 0.1f;
 
     // Vectors from each object's center to the contact point
     _contact.r1 = _contact.worldPosition - _body1->Position();

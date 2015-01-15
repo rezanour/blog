@@ -5,6 +5,7 @@
 
 static bool CollideCircleCircle(RigidBody* body1, RigidBody* body2, ContactInfo& contact);
 static bool CollideCircleBox(RigidBody* body1, RigidBody* body2, ContactInfo& contact);
+static bool CollideBoxBox(RigidBody* body1, RigidBody* body2, ContactInfo& contact);
 
 bool Collide(RigidBody* body1, RigidBody* body2, ContactInfo& contact)
 {
@@ -14,6 +15,10 @@ bool Collide(RigidBody* body1, RigidBody* body2, ContactInfo& contact)
     if (shape1->Type() == ShapeType::Circle && shape2->Type() == ShapeType::Circle)
     {
         return CollideCircleCircle(body1, body2, contact);
+    }
+    else if (shape1->Type() == ShapeType::Box && shape2->Type() == ShapeType::Box)
+    {
+        return CollideBoxBox(body1, body2, contact);
     }
     else if (shape1->Type() == ShapeType::Circle && shape2->Type() == ShapeType::Box)
     {
@@ -124,4 +129,123 @@ bool CollideCircleBox(RigidBody* body1, RigidBody* body2, ContactInfo& contact)
         contact.worldPosition = body1->Position() - contact.normal * shape1->Radius();
         return true;
     }
+}
+
+static Vector2 SupportMapping(const BoxShape* box, const Vector2& localDir)
+{
+    Vector2 half = 0.5f * box->Size();
+    return Vector2(
+        localDir.x >= 0 ? half.x : -half.x,
+        localDir.y >= 0 ? half.y : -half.y
+        );
+}
+
+bool CollideBoxBox(RigidBody* body1, RigidBody* body2, ContactInfo& contact)
+{
+    const BoxShape* shape1 = (const BoxShape*)body1->GetShape();
+    const BoxShape* shape2 = (const BoxShape*)body2->GetShape();
+
+    Matrix2 rot1(body1->Rotation());
+    Matrix2 rot2(body2->Rotation());
+    Matrix2 invRot1(rot1.Transposed());
+    Matrix2 invRot2(rot2.Transposed());
+    Vector2 toBody2 = body2->Position() - body1->Position();
+
+    float minPen = FLT_MAX;
+    Vector2 normal, pointOn1;
+
+    Vector2 dirs1[] =
+    {
+        rot1.col1,
+        rot1.col2,
+    };
+
+    float bounds1[] =
+    {
+        shape1->Size().x * 0.5f,
+        shape1->Size().y * 0.5f,
+    };
+
+    for (int i = 0; i < _countof(dirs1); ++i)
+    {
+        Vector2 v = dirs1[i].Normalized();
+        Vector2 pt = toBody2 + rot2 * SupportMapping(shape2, invRot2 * -v);
+        float d = Dot(pt, v);
+        float pen = bounds1[i] - d;
+        if (pen < 0)
+        {
+            return false;
+        }
+        if (pen < minPen)
+        {
+            minPen = pen;
+            normal = -v;
+            pointOn1 = pt + normal * pen;
+        }
+
+        // Other way
+        pt = toBody2 + rot2 * SupportMapping(shape2, invRot2 * v);
+        d = Dot(pt, -v);
+        pen = bounds1[i] - d;
+        if (pen < 0)
+        {
+            return false;
+        }
+        if (pen < minPen)
+        {
+            minPen = pen;
+            normal = v;
+            pointOn1 = pt + normal * pen;
+        }
+    }
+
+    Vector2 dirs2[] =
+    {
+        rot2.col1,
+        rot2.col2,
+    };
+
+    float bounds2[] =
+    {
+        shape2->Size().x * 0.5f,
+        shape2->Size().y * 0.5f,
+    };
+
+    for (int i = 0; i < _countof(dirs2); ++i)
+    {
+        Vector2 v = dirs2[i].Normalized();
+        Vector2 pt = -toBody2 + rot1 * SupportMapping(shape1, invRot1 * -v);
+        float d = Dot(pt, v);
+        float pen = bounds2[i] - d;
+        if (pen < 0)
+        {
+            return false;
+        }
+        if (pen < minPen)
+        {
+            minPen = pen;
+            normal = v;
+            pointOn1 = pt + toBody2;
+        }
+
+        // Other way
+        pt = -toBody2 + rot1 * SupportMapping(shape1, invRot1 * v);
+        d = Dot(pt, -v);
+        pen = bounds2[i] - d;
+        if (pen < 0)
+        {
+            return false;
+        }
+        if (pen < minPen)
+        {
+            minPen = pen;
+            normal = -v;
+            pointOn1 = pt + toBody2;
+        }
+    }
+
+    contact.normal = normal;
+    contact.distance = -minPen;
+    contact.worldPosition = body1->Position() + pointOn1;
+    return true;
 }
